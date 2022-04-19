@@ -1,3 +1,14 @@
 #canvas {
-	
+	z-index: 0;
+	position: fixed;
+	left: 0px;
+	top: 0px;
+}
+
+#coordinates {
+	z-index: 20;
+	color: white;
+	position: fixed;
+	top: 5px;
+	left: 5px;
 }

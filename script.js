@@ -1,5 +1,14 @@
 const canvas = document.getElementById("canvas")
 
+resizeCanvas()
+
+function resizeCanvas() {
+	canvas.width = window.innerWidth
+	canvas.height = window.innerHeight
+	console.log("wow")
+}
+
+
 const gl = canvas.getContext("webgl")
 
 const vShaderText = `
@@ -43,11 +52,11 @@ for (let x = -1; x <= 1; x += 2) {
 	}
 }
 
-addPoint(-10000, 0, -10000, .5, 0, 0)
-addPoint(10000, 0, -10000, .5, 0, 0)
+addPoint(-10000, 0, -10000, .5, .5, 0)
+addPoint(10000, 0, -10000, .5, 0, .5)
 addPoint(10000, 0, 10000, .5, 0, 0)
-addPoint(-10000, 0, 10000, .5, 0, 0)
-addPoint(0, 0, 0, .5, 0, 0)
+addPoint(-10000, 0, 10000, .5, 1, 0)
+addPoint(0, 0, 0, .5, .6, 0)
 
 addPoint(500, 0, 500, .5, .8, .3)
 addPoint(1000, 0, 500, 0, .8, .3)

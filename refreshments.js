@@ -1,3 +1,7 @@
+var X = 0,
+		Y = 1,
+		Z = 2
+
 var posX = 0,
 		posY = 0,
 		posZ = 0
@@ -10,6 +14,11 @@ var velocityX = 0,
 		velocityY = 0,
 		velocityZ = 0
 
+var fallRotateZ = 0,
+		fallRotateX = 0
+
+var onGround = false;
+
 
 var then = 0;
 
@@ -20,7 +29,7 @@ function refresh(now) {
 
 	// apply interaction
 
-	let speed = 1
+	let speed = .5
 
 	if (w) {
 		velocityX += speed * Math.cos(angleY - (Math.PI / 2))
@@ -39,60 +48,156 @@ function refresh(now) {
 	  velocityZ -= speed * Math.sin(angleY)
 	}
 
-	if (space) {
-		velocityY += speed
+	if (space && onGround) {
+		velocityY += 50
 	}
 	if (shift) {
 		velocityY -= speed
 	}
 
-	velocityX /= 1.5
-	velocityY /= 1.5
-	velocityZ /= 1.5
-
-	posX += velocityX
-	posY += velocityY
-	posZ += velocityZ
-
-
-
+	velocityX /= 1.1
+	velocityY -= 1
+	velocityZ /= 1.1
 
 	// move cube
 
-	let totalX = 0,
-			totalY = 0,
-			totalZ = 0
+	
 
 	for (let i = 0; i < 8; i++) {
-		movePoint(i, velocityX, velocityY, velocityZ)
-		
-		totalX += points[i*3 + 0]
-		totalY += points[i*3 + 1]
-		totalZ += points[i*3 + 2]
+		movePoint(i, 0, velocityY, 0)
 		
 		
 	}
+	
+	let average = calculateAverage();
+	
 
-	let averageX = totalX / 8,
-			averageY = totalY / 8,
-			averageZ = totalZ / 8
+
+	// find lowest point
+
+	let lowest = [0, 0, 0, 0]
+	let highest = [0, 0, 0, 0]
+
+	for (let i = 1; i < 8; i++) {
+		if (point(i, Y) < point(lowest[0], Y)) lowest[0] = i
+		if (point(i, Y) > point(highest[0], Y)) highest[0] = i
+	}
+	for (let i = 1; i < 8; i++) {
+		if (i != lowest[0]) {
+			if (point(i, Y) < point(lowest[1], Y)) lowest[1] = i
+			if (point(i, Y) > point(highest[1], Y)) highest[1] = i
+		}
+	}
+	for (let i = 1; i < 8; i++) {
+		if (i != lowest[0] && i != lowest[1]) {
+			if (point(i, Y) < point(lowest[2], Y)) lowest[2] = i
+			if (point(i, Y) > point(highest[3], Y)) highest[2] = i
+		}
+	}
+	for (let i = 1; i < 8; i++) {
+		if (i != lowest[0] && i != lowest[1] && i != lowest[2]) {
+			if (point(i, Y) < point(lowest[3], Y)) lowest[3] = i
+			if (point(i, Y) > point(highest[3], Y)) highest[3] = i
+		}
+	}
+
+	let fallSpeed = .005
+
+	if (onGround) {
+		let leaningX = point(highest[0], X) - point(lowest[0], X);
+		let leaningZ = point(highest[0], Z) - point(lowest[0], Z);
+
+		let leaningTotal = Math.abs(leaningX) + Math.abs(leaningZ);
+
+		if (leaningTotal != 0) {
+			leaningX /= leaningTotal * 2
+			leaningZ /= leaningTotal * 2
+		}
+
+		//console.log(leaningX + leaningZ)
+	
+	
+		//if (leaningX > 0) leaningX = fallSpeed;
+		//if (leaningX < 0) leaningX = -fallSpeed;
+		
+		//if (leaningZ > 0) leaningZ = fallSpeed;
+		//if (leaningZ < 0) leaningZ = -fallSpeed;
+		
+	
+		//fallRotateX += leaningX
+		//fallRotateZ += leaningZ
+
+		velocityX += leaningX
+		velocityZ += leaningZ
+	}
+	
+	//if (Math.abs(fallRotateX) < .001) fallRotateX = 0;
+	//if (Math.abs(fallRotateZ) < .001) fallRotateZ = 0;
+
+
+	fallRotateX /= 1.05
+	fallRotateZ /= 1.05
+
+	
+
+
+	
+
+
+	
+	rotateCubeZ(point(lowest[0], X), point(lowest[0], Y), -velocityX/100 - fallRotateX)
+	rotateCubeX(point(lowest[0], Y), point(lowest[0], Z), velocityZ/100 + fallRotateZ)
+
+
+	if (points[lowest[0]*3 + 1] <= 0) {
+		onGround = true
+		let difference = -point(lowest[0], Y);
+		velocityY = 0
+		
+		for (let i = 0; i < 8; i++) {
+			movePoint(i, 0, difference, 0)
 			
-
-	rotateCubeZ(averageX, averageY, -velocityX/50)
-	rotateCubeX(averageY, averageZ, velocityZ/50)
-
+			
+		}
 
 
+		// if bottommost non-anchor point is above anchor point
+		
+		// rotate fall
+
+		fallRotateSpeed = .1
+		
+		//if (highAverageZ < lowAverageZ) fallRotateZ -= .001
+		//if (highAverageZ > lowAverageZ) fallRotateZ += .001
+		
+		//if (highAverageX < highAverageX) fallRotateX -= .001
+		//if (highAverageX > highAverageX) fallRotateX += .001
+
+		
+		
+	} else {
+		onGround = false
+		
+		for (let i = 0; i < 8; i++) {
+			movePoint(i, velocityX, 0, velocityZ)
+			
+			
+		}
+	}
+	average = calculateAverage()
+
+	document.getElementById("coordinates").innerHTML = "x: " + Math.round(average.x) + "<br>y: " + Math.round(average.y) + "<br>z: " + Math.round(average.z)
+	
 	
 
 	// make matrices
 	
 	var tMatrix = mat4.create();
 
-	mat4.translate(tMatrix, tMatrix, [0, 0, -200])
+	mat4.translate(tMatrix, tMatrix, [0, 0, -300])
   mat4.rotateX(tMatrix, tMatrix, angleX);
   mat4.rotateY(tMatrix, tMatrix, angleY);
-	mat4.translate(tMatrix, tMatrix, [-averageX, -averageY, -averageZ]);
+	mat4.translate(tMatrix, tMatrix, [-average.x, -50, -average.z]);
 
 	var tMatrixLocation = gl.getUniformLocation(program, "tMatrix");
   gl.uniformMatrix4fv(tMatrixLocation, false, tMatrix);

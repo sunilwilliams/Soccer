@@ -45,3 +45,30 @@ function rotateCubeX(anchorY, anchorZ, amount) {
 		
 	}
 }
+
+
+function calculateAverage() {
+	let totalX = 0,
+			totalY = 0,
+			totalZ = 0
+
+	for (let i = 0; i < 8; i++) {
+		totalX += points[i*3 + 0]
+		totalY += points[i*3 + 1]
+		totalZ += points[i*3 + 2]
+		
+		
+	}
+
+	return {
+		x: totalX / 8,
+		y: totalY / 8,
+		z: totalZ / 8
+	}
+}
+
+
+function point(num, which) {
+	return points[num*3 + which]
+}
+
