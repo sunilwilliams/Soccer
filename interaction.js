@@ -1,3 +1,5 @@
+var running = false
+
 var w = false,
 		a = false,
 		s = false,
@@ -57,8 +59,13 @@ canvas.onclick = function() {
 document.addEventListener("pointerlockchange", function () {
 	if (document.pointerLockElement === canvas) {
 		pointerLocked = true
+		if (!running) {
+			running = true
+			refresh()
+		}
 	} else {
 		pointerLocked = false
+		running = false
 	}
 }, false)
 

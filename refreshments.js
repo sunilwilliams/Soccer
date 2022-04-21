@@ -1,6 +1,6 @@
-var X = 0,
-		Y = 1,
-		Z = 2
+const X = 0,
+			Y = 1,
+			Z = 2
 
 var posX = 0,
 		posY = 0,
@@ -14,10 +14,14 @@ var velocityX = 0,
 		velocityY = 0,
 		velocityZ = 0
 
-var fallRotateZ = 0,
-		fallRotateX = 0
+var lastVelocityX = 0,
+		lastVelocityY = 0,
+		lastVelocityZ = 0
+
 
 var onGround = false;
+
+var lastAverage = {x: 0, y: 0, z: 0};
 
 
 var then = 0;
@@ -29,7 +33,7 @@ function refresh(now) {
 
 	// apply interaction
 
-	let speed = .5
+	let speed = .75
 
 	if (w) {
 		velocityX += speed * Math.cos(angleY - (Math.PI / 2))
@@ -65,115 +69,93 @@ function refresh(now) {
 
 	for (let i = 0; i < 8; i++) {
 		movePoint(i, 0, velocityY, 0)
-		
-		
 	}
 	
-	let average = calculateAverage();
-	
-
 
 	// find lowest point
 
-	let lowest = [0, 0, 0, 0]
-	let highest = [0, 0, 0, 0]
+	let lowest = 0,
+			secondLowest = 7,
+			thirdLowest = 0,
+			fourthLowest = 0,
+			
+			highest = 0,
+			secondHighest = 0,
+			thirdHighest = 0,
+			fourthHighest = 0
 
 	for (let i = 1; i < 8; i++) {
-		if (point(i, Y) < point(lowest[0], Y)) lowest[0] = i
-		if (point(i, Y) > point(highest[0], Y)) highest[0] = i
+		if (point(i, Y) < point(lowest, Y)) lowest = i
+		if (point(i, Y) > point(highest, Y)) highest = i
 	}
-	for (let i = 1; i < 8; i++) {
-		if (i != lowest[0]) {
-			if (point(i, Y) < point(lowest[1], Y)) lowest[1] = i
-			if (point(i, Y) > point(highest[1], Y)) highest[1] = i
+	while (secondLowest == lowest) secondLowest++
+	for (let i = 0; i < 8; i++) {
+		if (i != lowest) {
+			if (point(i, Y) < point(secondLowest, Y)) secondLowest = i
 		}
 	}
-	for (let i = 1; i < 8; i++) {
-		if (i != lowest[0] && i != lowest[1]) {
-			if (point(i, Y) < point(lowest[2], Y)) lowest[2] = i
-			if (point(i, Y) > point(highest[3], Y)) highest[2] = i
+	while (thirdLowest == secondLowest || thirdLowest == lowest) secondLowest++
+	for (let i = 0; i < 8; i++) {
+		if (i != lowest && i != secondLowest) {
+			if (point(i, Y) < point(thirdLowest, Y)) thirdLowest = i
 		}
 	}
-	for (let i = 1; i < 8; i++) {
-		if (i != lowest[0] && i != lowest[1] && i != lowest[2]) {
-			if (point(i, Y) < point(lowest[3], Y)) lowest[3] = i
-			if (point(i, Y) > point(highest[3], Y)) highest[3] = i
+	while (fourthLowest == thirdLowest || fourthLowest == secondLowest || fourthLowest == lowest) secondLowest++
+	for (let i = 0; i < 8; i++) {
+		if (i != lowest && i != secondLowest && i != thirdLowest) {
+			if (point(i, Y) < point(fourthLowest, Y)) fourthLowest = i
 		}
 	}
 
-	let fallSpeed = .005
+	console.log(lowest + ", " + secondLowest + ", " + thirdLowest + ", " + fourthLowest)
 
+	if (!w && !a && !s && !d && (Math.abs(point(lowest, Y) - Math.abs(point(thirdLowest, Y)))) < 2) {
+		velocityX = 0
+		velocityZ = 0
+	}
+
+	//console.log((Math.abs(point(lowest, Y) - Math.abs(point(fourthLowest, Y)))))
+		
 	if (onGround) {
-		let leaningX = point(highest[0], X) - point(lowest[0], X);
-		let leaningZ = point(highest[0], Z) - point(lowest[0], Z);
+		let leaningX = point(highest, X) - point(lowest, X);
+		let leaningZ = point(highest, Z) - point(lowest, Z);
 
 		let leaningTotal = Math.abs(leaningX) + Math.abs(leaningZ);
 
 		if (leaningTotal != 0) {
-			leaningX /= leaningTotal * 2
-			leaningZ /= leaningTotal * 2
+			leaningX /= leaningTotal * 1
+			leaningZ /= leaningTotal * 1
 		}
 
-		//console.log(leaningX + leaningZ)
-	
-	
-		//if (leaningX > 0) leaningX = fallSpeed;
-		//if (leaningX < 0) leaningX = -fallSpeed;
 		
-		//if (leaningZ > 0) leaningZ = fallSpeed;
-		//if (leaningZ < 0) leaningZ = -fallSpeed;
-		
-	
-		//fallRotateX += leaningX
-		//fallRotateZ += leaningZ
 
 		velocityX += leaningX
 		velocityZ += leaningZ
+		
 	}
 	
-	//if (Math.abs(fallRotateX) < .001) fallRotateX = 0;
-	//if (Math.abs(fallRotateZ) < .001) fallRotateZ = 0;
 
-
-	fallRotateX /= 1.05
-	fallRotateZ /= 1.05
-
-	
 
 
 	
 
 
 	
-	rotateCubeZ(point(lowest[0], X), point(lowest[0], Y), -velocityX/100 - fallRotateX)
-	rotateCubeX(point(lowest[0], Y), point(lowest[0], Z), velocityZ/100 + fallRotateZ)
+	rotateCubeZ(point(lowest, X), point(lowest, Y), -velocityX/100)
+	rotateCubeX(point(lowest, Y), point(lowest, Z), velocityZ/100)
 
 
-	if (points[lowest[0]*3 + 1] <= 0) {
+	if (point(lowest, Y) <= 0) {
 		onGround = true
-		let difference = -point(lowest[0], Y);
+		let difference = -point(lowest, Y);
 		velocityY = 0
 		
 		for (let i = 0; i < 8; i++) {
 			movePoint(i, 0, difference, 0)
-			
-			
 		}
 
 
-		// if bottommost non-anchor point is above anchor point
-		
-		// rotate fall
 
-		fallRotateSpeed = .1
-		
-		//if (highAverageZ < lowAverageZ) fallRotateZ -= .001
-		//if (highAverageZ > lowAverageZ) fallRotateZ += .001
-		
-		//if (highAverageX < highAverageX) fallRotateX -= .001
-		//if (highAverageX > highAverageX) fallRotateX += .001
-
-		
 		
 	} else {
 		onGround = false
@@ -184,7 +166,8 @@ function refresh(now) {
 			
 		}
 	}
-	average = calculateAverage()
+	
+	let average = calculateAverage()
 
 	document.getElementById("coordinates").innerHTML = "x: " + Math.round(average.x) + "<br>y: " + Math.round(average.y) + "<br>z: " + Math.round(average.z)
 	
@@ -194,10 +177,10 @@ function refresh(now) {
 	
 	var tMatrix = mat4.create();
 
-	mat4.translate(tMatrix, tMatrix, [0, 0, -300])
+	mat4.translate(tMatrix, tMatrix, [0, 0, -400])
   mat4.rotateX(tMatrix, tMatrix, angleX);
   mat4.rotateY(tMatrix, tMatrix, angleY);
-	mat4.translate(tMatrix, tMatrix, [-average.x, -50, -average.z]);
+	mat4.translate(tMatrix, tMatrix, [-average.x, -((average.y + lastAverage.y) / 2), -average.z]);
 
 	var tMatrixLocation = gl.getUniformLocation(program, "tMatrix");
   gl.uniformMatrix4fv(tMatrixLocation, false, tMatrix);
@@ -217,7 +200,11 @@ function refresh(now) {
   var pMatrixLocation = gl.getUniformLocation(program, "pMatrix");
   gl.uniformMatrix4fv(pMatrixLocation, false, pMatrix);
 
+	lastAverage = average
 
+	lastVelocityX = velocityX;
+	lastVelocityY = velocityY;
+	lastVelocityZ = velocityZ;
 	
 	// calculate lighting
 
@@ -242,17 +229,10 @@ function refresh(now) {
 	var posAttribLocation = gl.getAttribLocation(program, "vertPosition");
 	gl.vertexAttribPointer(posAttribLocation, pointsSize, gl.FLOAT, false, pointsSize * Float32Array.BYTES_PER_ELEMENT, 0);
 	gl.enableVertexAttribArray(posAttribLocation);
-
-
 	
 
 
 	gl.useProgram(program);
-
-  
-
-  
-
 
 
 
@@ -268,5 +248,5 @@ function refresh(now) {
   gl.drawElements(gl.TRIANGLES, polys.length, gl.UNSIGNED_SHORT, 0);
 
 
-	requestAnimationFrame(refresh)
+	if (running) requestAnimationFrame(refresh)
 }

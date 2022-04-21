@@ -13,6 +13,12 @@ function changePoint(pointNum, x, y, z) {
 	points[pointNum*3 + 2] = z
 }
 
+function movePointColor(pointNum, plusR, plusG, plusB) {
+	pointColors[pointNum*4 + 0] += plusR
+	pointColors[pointNum*4 + 1] += plusG
+	pointColors[pointNum*4 + 2] += plusB
+}
+
 
 
 function movePoint(pointNum, plusX, plusY, plusZ) {
