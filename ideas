@@ -1,0 +1,22 @@
+if pressing shift and on side/corner, make cube self-right faster then crouch once cube is flat
+
+
+* how to waddle *
+
+rotate left around bottom point
+
+
+
+
+COMBAT
+
+flash character red when take damage
+
+big platforms inbetween arenas sometimes with coins
+
+coins replenish some health
+
+big platforms have respawn points -- make respawn point object
+
+respawn: 
+	make respawn point 

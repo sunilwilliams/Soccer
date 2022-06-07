@@ -5,10 +5,18 @@
 	top: 0px;
 }
 
-#coordinates {
+#info {
 	z-index: 20;
 	color: white;
 	position: fixed;
 	top: 5px;
+	left: 5px;
+}
+
+input {
+	z-index: 20;
+	position: fixed;
+	
+	top: 130px;
 	left: 5px;
 }
