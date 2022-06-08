@@ -81,8 +81,8 @@ function refresh(now) {
 	// apply interaction
 
 	// .75
-	let speed = .75
-	let halfSpeed = Math.sqrt(speed)
+	let speed = 1
+	let halfSpeed = speed / Math.sqrt(2)
 
 	if (!crouching) {
 
@@ -359,13 +359,22 @@ function refresh(now) {
 		
 	
 	if (point(low[0], Y) <= 0) {
-		onGround = true
-		let difference = -point(low[0], Y);
-		velocityY = 0
+
 		
-		for (let i = 0; i < playerPoints; i++) {
-			movePoint(i, 0, difference, 0)
+		if (velocityY < -40) {
+			console.log("respawn")
+			respawnPoints[currentRespawnPoint].respawnPlayerHere()
+		} else {
+			
+			onGround = true
+			let difference = -point(low[0], Y);
+			velocityY = 0
+			
+			for (let i = 0; i < playerPoints; i++) {
+				movePoint(i, 0, difference, 0)
+			}
 		}
+		
 	} else {
 		onGround = false
 
@@ -397,10 +406,11 @@ function refresh(now) {
 	//arena.run()
 
 	for (let i = 0; i < pathPlatforms.length; i++) {
-		pathPlatforms[i].run()
+		if (pathPlatforms[i].loadedIn) pathPlatforms[i].run()
 	}
 
 	//for (let i = 0; i < bouncePads.length; i++) bouncePads[i].run()
+	bouncePad.run()
 
 	coin.run()
 
@@ -436,9 +446,76 @@ function refresh(now) {
 
 	//let inWidth = Math.round(rollingFrameRate / 3.25)
 
-	inWidth = 10
+	inWidth = 4
 
 
+	for (let i = 0; i < arenas.length; i++) {
+		let distance = Math.sqrt(Math.pow(arenas[i].x - average.x , 2) + Math.pow(arenas[i].z - average.z, 2))
+		if (!arenas[i].loadedIn) {
+			//console.log(distance)
+			if (distance < (inWidth * grassSectionSize) + arenas[i].radius) {
+				arenas[i].loadIn()
+			}
+			
+		} else {
+			if (distance > (inWidth * grassSectionSize) + arenas[i].radius) {
+				arenas[i].loadOut()
+			}
+		}
+	}
+
+	for (let i = 0; i < bouncePads.length; i++) {
+		let distance = Math.sqrt(Math.pow(bouncePads[i].x + (bouncePads[i].xWidth/2) - average.x , 2) + Math.pow(bouncePads[i].z + (bouncePads[i].zLength/2) - average.z, 2))
+		if (!bouncePads[i].loadedIn) {
+			//console.log(distance)
+			if (distance < (inWidth * grassSectionSize)) {
+				bouncePads[i].loadIn()
+				console.log("loaded in bouncePad")
+			}
+			
+		} else {
+			if (distance > (inWidth * grassSectionSize)) {
+				bouncePads[i].loadOut()
+				console.log("loaded out bouncePad")
+			}
+		}
+	}
+
+	
+	for (let i = 0; i < platforms.length; i++) {
+		let distance = Math.sqrt(Math.pow(platforms[i].x + (platforms[i].xWidth/2) - average.x , 2) + Math.pow(platforms[i].z + (platforms[i].zLength/2) - average.z, 2))
+		if (!platforms[i].loadedIn) {
+			//console.log(distance)
+			if (distance < (inWidth * grassSectionSize)) {
+				platforms[i].loadIn()
+				console.log("loaded in platform")
+			}
+			
+		} else {
+			if (distance > (inWidth * grassSectionSize)) {
+				platforms[i].loadOut()
+				console.log("loaded out platform")
+			}
+		}
+	}
+
+	for (let i = currentRespawnPoint+1; i < respawnPoints.length; i++) {
+		let current = respawnPoints[i]
+		let distance = Math.sqrt(Math.pow(current.x - average.x, 2) + Math.pow(current.z - average.z, 2))
+
+		if (distance < 500) {
+			currentRespawnPoint = i
+			console.log(currentRespawnPoint)
+
+		}
+		
+	}
+
+	for (let i = 0; i < respawnPoints.length; i++) {
+		if (respawnPoints[i].loadedIn) respawnPoints[i].run()
+	}
+
+	
 	
 	let grassXInStart = grassX - inWidth
 	if (grassXInStart < 0) grassXInStart = 0
@@ -644,7 +721,7 @@ function refresh(now) {
 		let distanceSquared = pointX * pointX + pointZ * pointZ
 
 		
-		let distToDarken = 200
+		let distToDarken = 600
 		distToDarken = distToDarken * distToDarken
 		
 		let minDistSquared = inWidth * grassSectionSize * inWidth * grassSectionSize - distToDarken

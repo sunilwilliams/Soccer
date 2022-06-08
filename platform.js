@@ -10,7 +10,9 @@ class Platform {
 		this.polys = []
 		this.points = []
 
-		this.makePolys()
+		//this.makePolys()
+
+		this.loadedIn = false
 		
 	}
 
@@ -56,6 +58,31 @@ class Platform {
 	}
 
 
+	loadIn() {
+		if (!this.loadedIn) {
+			this.loadedIn = true
+			this.makePolys()
+		}
+	}
+
+	loadOut() {
+		if (this.loadedIn) {
+			this.loadedIn = false
+			for (let i = 0; i < this.polys.length; i++) {
+				deletePoly(this.polys[i])
+			} this.polys = []
+
+			for (let i = 0; i < this.points.length; i++) {
+				for (let j = 0; j < this.points[i].length; j++) {
+					for (let k = 0; k < this.points[i][j].length; k++) {
+						deletePoint(this.points[i][j][k])
+					}
+				}
+			} this.points = []
+		}
+	}
+	
+	
 
 	run() {
 		this.collision()
@@ -176,11 +203,32 @@ class BouncePad {
 		this.farY = y + yHeight
 		this.farZ = z + zLength
 
-		let precision = 10
+		let precision = Math.round(Math.sqrt(xWidth * zLength) / 30 * detailLevel)
 		this.precision = precision
-
+		
 		this.topPoints = []
 		this.bottomPoints = []
+
+		this.polys = []
+
+		//this.makePolys()
+
+		
+		this.waveStartFrame = 0
+		this.hitX = 0
+		this.hitY = 0
+		this.hitZ = 0
+
+		
+		this.nextPlatform
+
+		this.loadedIn = false
+
+		
+	}
+
+	makePolys() {
+		let precision = this.precision
 
 		for (let i = 0; i <= precision; i++) {
 			this.topPoints[i] = []
@@ -235,11 +283,11 @@ class BouncePad {
 				this.bottomPoints[i][j].z = this.z + j * zChange
 				
 				if (i > 0 && j > 0) {
-					addPoly(this.topPoints[i][j].point, this.topPoints[i-1][j].point, this.topPoints[i-1][j-1].point)
-					addPoly(this.topPoints[i-1][j-1].point, this.topPoints[i][j-1].point, this.topPoints[i][j].point)
+					this.polys.push(addPoly(this.topPoints[i][j].point, this.topPoints[i-1][j].point, this.topPoints[i-1][j-1].point))
+					this.polys.push(addPoly(this.topPoints[i-1][j-1].point, this.topPoints[i][j-1].point, this.topPoints[i][j].point))
 					
-					addPoly(this.bottomPoints[i][j].point, this.bottomPoints[i-1][j].point, this.bottomPoints[i-1][j-1].point)
-					addPoly(this.bottomPoints[i-1][j-1].point, this.bottomPoints[i][j-1].point, this.bottomPoints[i][j].point)
+					this.polys.push(addPoly(this.bottomPoints[i][j].point, this.bottomPoints[i-1][j].point, this.bottomPoints[i-1][j-1].point))
+					this.polys.push(addPoly(this.bottomPoints[i-1][j-1].point, this.bottomPoints[i][j-1].point, this.bottomPoints[i][j].point))
 				
 
 				
@@ -252,34 +300,55 @@ class BouncePad {
 
 		for (let i = 1; i <= precision; i++) {
 					
-			addPoly(this.topPoints[i][0].point, this.topPoints[i-1][0].point, this.bottomPoints[i-1][0].point)
-			addPoly(this.bottomPoints[i-1][0].point, this.bottomPoints[i][0].point, this.topPoints[i][0].point)
+			this.polys.push(addPoly(this.topPoints[i][0].point, this.topPoints[i-1][0].point, this.bottomPoints[i-1][0].point))
+			this.polys.push(addPoly(this.bottomPoints[i-1][0].point, this.bottomPoints[i][0].point, this.topPoints[i][0].point))
 
-			addPoly(this.topPoints[i][precision].point, this.topPoints[i-1][precision].point, this.bottomPoints[i-1][precision].point)
-			addPoly(this.bottomPoints[i-1][precision].point, this.bottomPoints[i][precision].point, this.topPoints[i][precision].point)
+			this.polys.push(addPoly(this.topPoints[i][precision].point, this.topPoints[i-1][precision].point, this.bottomPoints[i-1][precision].point))
+			this.polys.push(addPoly(this.bottomPoints[i-1][precision].point, this.bottomPoints[i][precision].point, this.topPoints[i][precision].point))
 
 
-			addPoly(this.topPoints[0][i].point, this.topPoints[0][i-1].point, this.bottomPoints[0][i-1].point)
-			addPoly(this.bottomPoints[0][i-1].point, this.bottomPoints[0][i].point, this.topPoints[0][i].point)
+			this.polys.push(addPoly(this.topPoints[0][i].point, this.topPoints[0][i-1].point, this.bottomPoints[0][i-1].point))
+			this.polys.push(addPoly(this.bottomPoints[0][i-1].point, this.bottomPoints[0][i].point, this.topPoints[0][i].point))
 		
-			addPoly(this.topPoints[precision][i].point, this.topPoints[precision][i-1].point, this.bottomPoints[precision][i-1].point)
-			addPoly(this.bottomPoints[precision][i-1].point, this.bottomPoints[precision][i].point, this.topPoints[precision][i].point)
+			this.polys.push(addPoly(this.topPoints[precision][i].point, this.topPoints[precision][i-1].point, this.bottomPoints[precision][i-1].point))
+			this.polys.push(addPoly(this.bottomPoints[precision][i-1].point, this.bottomPoints[precision][i].point, this.topPoints[precision][i].point))
 
 				
 		}
-
-		
-		this.waveStartFrame = 0
-		this.hitX = 0
-		this.hitY = 0
-		this.hitZ = 0
-
-		
-		this.nextPlatform
-
-		
 	}
 
+
+	loadIn() {
+		if (!this.loadedIn) {
+			this.loadedIn = true
+			this.makePolys()
+		}
+	}
+
+	loadOut() {
+		if (this.loadedIn) {
+			this.loadedIn = false
+
+			for (let i = 0; i < this.polys.length; i++) {
+				deletePoly(this.polys[i])
+			} this.polys = []
+
+			for (let i = 0; i < this.topPoints.length; i++) {
+				for (let j = 0; j < this.topPoints[i].length; j++) {
+					deletePoint(this.topPoints[i][j].point)
+				}
+			} this.topPoints = []
+
+			
+			for (let i = 0; i < this.bottomPoints.length; i++) {
+				for (let j = 0; j < this.bottomPoints[i].length; j++) {
+					deletePoint(this.bottomPoints[i][j].point)
+				}
+			} this.bottomPoints = []
+
+			
+		}
+	}
 	
 	run() {
 		this.collision()
@@ -424,89 +493,7 @@ class BouncePad {
 
 
 
-class Coin {
-	constructor(x, y, z, r, g, b) {
-		this.x = x
-		this.y = y
-		this.z = z
 
-		this.thickness = 10 / 2
-		this.radius = 25
-
-		let precision = 20
-		this.precision = precision
-
-		this.centerPoints = [{
-			point: addPoint(this.x, this.y, this.z - this.thickness, r, g, b), 
-			x: this.x,
-			y: this.y,
-			z: this.z - 0
-		}, {
-			point: addPoint(this.x, this.y, this.z + this.thickness, r, g, b),
-			x: this.x,
-			y: this.y,
-			z: this.z + 0
-		}]
-		
-		this.points = [[], []]
-		for (let i = 0; i < precision; i++) {
-			let angle = (2 * Math.PI / precision) * i
-			this.points[0][i] = {
-				point: addPoint(this.x + this.radius * Math.cos(angle), 
-												this.y + this.radius * Math.sin(angle), 
-												this.z - this.thickness, r, g, b),
-				x: this.x + this.radius * Math.cos(angle),
-				y: this.y + this.radius * Math.sin(angle),
-				z: this.z - this.thickness
-		}
-			
-			this.points[1][i] = {
-				point: addPoint(this.x + this.radius * Math.cos(angle), 
-												this.y + this.radius * Math.sin(angle), 
-												this.z + this.thickness, r, g, b),
-				x: this.x + this.radius * Math.cos(angle),
-				y: this.y + this.radius * Math.sin(angle),
-				z: this.z + this.thickness
-			}
-		}
-
-		this.polys = []
-		for (let i = 1; i < precision; i++) {
-			this.polys.push(addPoly(this.points[0][i].point, this.points[0][i-1].point, this.points[1][i-1].point))
-			this.polys.push(addPoly(this.points[1][i-1].point, this.points[1][i].point, this.points[0][i].point))
-
-			this.polys.push(addPoly(this.points[0][i].point, this.points[0][i-1].point, this.centerPoints[0].point))
-			this.polys.push(addPoly(this.points[1][i].point, this.points[1][i-1].point, this.centerPoints[1].point))
-		}
-		this.polys.push(addPoly(this.points[0][precision - 1].point, this.points[0][0].point, this.points[1][0].point))
-		this.polys.push(addPoly(this.points[1][0].point, this.points[1][precision - 1].point, this.points[0][precision - 1].point))
-
-		this.polys.push(addPoly(this.points[0][precision - 1].point, this.points[0][0].point, this.centerPoints[0].point))
-		this.polys.push(addPoly(this.points[1][precision - 1].point, this.points[1][0].point, this.centerPoints[1].point))
-		
-		this.rotation = 0
-	}
-
-	run() {
-		this.rotation += Math.PI / 30
-		// rotate
-		for (let i = 0; i < 2; i++) {
-			for (let j = 0; j < this.points[0].length; j++) {
-				//pointNum, startX, startY, startZ, anchorZ, anchorX, amount
-				let current = this.points[i][j]
-				//rotatePointY(current.point, current.x, current.y, current.z, this.z, this.x, this.rotation)
-
-				let tempZ = current.z - this.z
-				let tempX = current.x - this.x
-
-				changePoint(current.point,
-										current.x + ((tempZ * Math.sin(this.rotation)) + (tempX * Math.cos(this.rotation))), 
-										current.y, 
-									 	current.z + ((tempZ * Math.cos(this.rotation)) - (tempX * Math.sin(this.rotation))))
-			}
-		}
-	}
-}
 
 
 
@@ -528,27 +515,26 @@ class Arena {
 
 		this.thickness = 20
 
-		this.precision = 24
+		this.precision = Math.round(24 * detailLevel)
 		
-		this.wallPrecision = 23
+		this.wallPrecision = Math.round(23 * detailLevel)
 
 		this.trimHeight = 20
-		this.wallHeight = 1000
+		this.wallHeight = 500
 
-		this.makePolys()
+		this.points = []
+		this.polys = []
+		
+		this.trimPoints = [[], []] // index 0 = inside, index 1 = outside
+		this.trimPolys = []
+		
+		//this.makePolys()
+
+		this.loadedIn = false
 
 		this.blades = []
 
-		for (let i = 0; i < .002 * this.radius * this.radius; i++) {
-			let offsetX = (Math.random() - .5) * 2 * this.radius
-			let offsetZ = (Math.random() - .5) * 2 * this.radius
-			while (offsetX*offsetX + offsetZ*offsetZ > this.radius*this.radius) {
-				offsetX = (Math.random() - .5) * 2 * this.radius
-				offsetZ = (Math.random() - .5) * 2 * this.radius
-			}
-			this.blades.push(new Grass(this.x + offsetX, this.y, this.z + offsetZ, (Math.random() + .5) * 100))
-		}
-
+		
 		this.active = true
 		
 		this.inArena = false
@@ -573,6 +559,62 @@ class Arena {
 		
 	}
 
+	loadIn() {
+		if (!this.loadedIn) {
+			this.loadedIn = true
+
+			this.makePolys()
+			
+			for (let i = 0; i < .002 * this.radius * this.radius * detailLevel * detailLevel; i++) {
+				let offsetX = (Math.random() - .5) * 2 * this.radius
+				let offsetZ = (Math.random() - .5) * 2 * this.radius
+				while (offsetX*offsetX + offsetZ*offsetZ > this.radius*this.radius) {
+					offsetX = (Math.random() - .5) * 2 * this.radius
+					offsetZ = (Math.random() - .5) * 2 * this.radius
+				}
+				this.blades.push(new Grass(this.x + offsetX, this.y, this.z + offsetZ, (Math.random() + .5) * 100))
+			}
+			
+		}
+
+	}
+
+	loadOut() {
+		if (this.loadedIn) {
+			this.loadedIn = false
+
+			
+			for (let i = 0; i < this.polys.length; i++) {
+				deletePoly(this.polys[i])
+			} this.polys = []
+
+			for (let i = 0; i < this.points.length; i++) {
+				deletePoint(this.points[i])
+			} this.points = []
+
+
+			for (let i = 0; i < this.trimPolys.length; i++) {
+				deletePoly(this.trimPolys[i])
+			} this.trimPolys = []
+
+			for (let i = 0; i < this.trimPoints; i++) {
+				for (let j = 0; j < this.trimPoints[i].length; j++) {
+					for (let k = 0; k < this.trimPoints[i][j].length; k++) {
+						deletePoint(this.trimPoints[i][j][k].point)
+					}
+				}
+			} this.trimPoints = [[], []]
+			
+			
+			for (let i = 0; i < this.blades.length; i++) {
+				this.blades[i].deletePoly()
+			}
+	
+			this.blades = []
+
+		}
+	}
+
 	// could make rings
 
 	// first just make trim with three wall points (below, ground-leve, above)
@@ -581,7 +623,6 @@ class Arena {
 	makePolys() {
 		this.centerPoint = addPoint(this.x, this.y, this.z, this.r, this.g, this.b)
 
-		this.points = []
 			for (let j = 0; j < this.precision; j++) {
 				let angle = 2 * Math.PI / this.precision * j
 				this.points[j] = addPoint(
@@ -592,7 +633,6 @@ class Arena {
 				)
 			}
 
-		this.polys = []
 		
 		for (let j = 1; j < this.precision; j++) {
 			this.polys.push(addPoly(this.points[j], this.points[j-1], this.centerPoint))
@@ -604,7 +644,6 @@ class Arena {
 		// rises up when player enters arena
 		// bounces with rainbow when player hits sides
 
-		this.trimPoints = [[], []] // index 0 = inside, index 1 = outside
 
 
 		// first one is bottom one (index 0)
@@ -659,7 +698,6 @@ class Arena {
 			}
 		}
 
-		this.trimPolys = []
 		
 		for (let i = 0; i < 2; i++) {
 			for (let j = 1; j < this.precision; j++) {
@@ -768,7 +806,7 @@ class Arena {
 		if (frameCounter == this.wallsDownEndFrame) {
 			for (let i = 0; i < this.trimPolys.length; i++) {
 				deletePoly(this.trimPolys[i])
-			}
+			} this.trimPolys = []
 
 			for (let i = 0; i < this.trimPoints.length; i++) {
 				for (let j = 0; j < this.trimPoints[i].length; j++) {
@@ -877,7 +915,7 @@ class Arena {
 			this.wallsUpEndFrame = frameCounter + this.animationTime
 	
 			// size, power, agility, health, x, z, r, g, b
-			this.enemy = new Enemy(100, 100, 100, 100, this.x, this.y, this.z)
+			this.enemy = new Enemy(125, 100, 100, 100, this.x, this.y, this.z)
 
 			// make wall polys with wallprecision
 

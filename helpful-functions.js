@@ -316,3 +316,8 @@ function lerp(a, b, x) {
 	}
 	throw "lerp a value from 0 to 1"
 }
+
+
+function randomOffset(x) {
+	return (Math.random() - .5) * x * 2
+}

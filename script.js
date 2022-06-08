@@ -220,8 +220,6 @@ gl.validateProgram(program);
 //											size, power, agility, health, x, z, r, g, b
 //let monster = new Enemy(100, 50, 50, 50, 600, -1000, 1, 0, 0)
 
-
-
 var lastPoints = []
 for (let i = 0; i < playerPoints; i++) {
 	lastPoints.push([point(i, X), point(i, Y), point(i, Z)])
@@ -235,6 +233,9 @@ var xOfY = []
 
 var xOfZ = []
 var yOfZ = []
+
+
+var detailLevel = Number(document.getElementById("detailSlider").value) / 20
 
 
 /*
@@ -251,73 +252,273 @@ for (let i = 0; i < 10; i++) {
 }
 */
 
-var grassSectionSize = 100
-var grassSectionNumber = 400;
+var grassSectionSize = 300
+var grassSectionNumber = 600;
 
 var grassSections = []
-for (let i = 0; i < grassSectionNumber; i++) {
-	grassSections.push([])
-	for (let j = 0; j < grassSectionNumber; j++) {
-		grassSections[i].push(new GrassSection((i - (grassSectionNumber / 2)) * grassSectionSize, (j - (grassSectionNumber / 2)) * grassSectionSize, grassSectionSize, 150))
+var bouncePad
+var coin
+var respawnPoint
+
+var currentRespawnPoint = 0
+
+
+var pathPlatforms
+var platforms
+var bouncePads
+var arenas
+var respawnPoints
+
+var constructed = false
+
+
+gl.clearColor(0, .25, 0, 1);
+gl.clearDepth(1);
+gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+document.getElementById("play").onclick = function () {
+	if (!constructed) {
+		detailLevel = Number(document.getElementById("detailSlider").value) / 20
+
+		document.getElementById("detailSlider").style = "z-index: -5"
+		document.getElementById("play").style = "z-index: -5"
+		constructed = true
+
+		
+		for (let i = 0; i < grassSectionNumber; i++) {
+			grassSections.push([])
+			for (let j = 0; j < grassSectionNumber; j++) {
+				grassSections[i].push(new GrassSection((i - (grassSectionNumber / 2)) * grassSectionSize, (j - (grassSectionNumber / 2)) * grassSectionSize, grassSectionSize, 150))
+			}
+		}
+		
+		
+		//var platform = new Platform(100, 200, 100, 500, 500, 200)
+		
+		//var bouncePads = []
+		//bouncePads.push(new BouncePad(700, 300, 500, 400, 100, 500))
+		
+		bouncePad = new BouncePad(-1500, 200, -500, 500, 100, 500)
+		
+		coin = new Coin(200, 200, 0, 1, 1, 0)
+		
+		//var arena = new Arena(1750, 500, 500, 750)
+		
+
+		//respawnPoint = new RespawnPoint(0, 0, 0)
+		
+		
+		// make path
+		// each joint is a small path that ends with an arena
+		// each joint goes up and in a random direction
+		
+		pathPlatforms = []
+
+		platforms = []
+		bouncePads = []
+		arenas = []
+		respawnPoints = []
+		respawnPoints.push(new RespawnPoint(0, 0, 0))
+		
+		const START = 0
+		const STAIRS = 1
+		const BOUNCY_STAIRS = 2
+
+		
+		
+		
+		let currentJoint = START
+		let currentX = 0
+		let currentY = 0
+		let currentZ = 200
+		
+		let platformWidth = 200
+		let platformHeight = 75
+		let platformLength = 300
+		
+		let numberOfLevels = 20
+
+		let lastDirectionX = 0
+		let lastDirectionZ = 1
+		
+		let directionX = 0
+		let directionZ = 1
+		
+		for (let i = 0; i < numberOfLevels; i++) {
+
+
+			let pathChooser = Math.random()
+
+
+			//while (directionX == lastDirectionX && directionX)
+			
+			let directionChooser = Math.random()
+
+			
+			if (directionChooser < .25) {
+				directionX = 1
+				directionZ = 0
+			} else if (directionChooser < .5) {
+				directionX = 1
+				directionZ = 0
+			} else if (directionChooser < .75) {
+				directionX = 0
+				directionZ = -1
+			} else if (directionChooser < 1) {
+				directionX = 0
+				directionZ = -1
+			}
+
+			if (pathChooser < 1) {
+				// normal big platform with respawn point and 
+				//possible diverging paths with coins
+
+				// *staircase to big platform
+
+				
+				currentX += directionX * 100
+				currentZ += directionZ * 100
+				
+
+				for (let i = 0; i < 3; i++) {
+					currentX += directionX * 750 + randomOffset(100)
+					currentY += 200
+					currentZ += directionZ * 750 + randomOffset(100)
+					
+					let width = 400
+					pathPlatforms.push(new Platform(currentX - width/2, currentY, currentZ - width/2, 
+																					width, 100, width))
+					platforms.push(pathPlatforms[pathPlatforms.length-1])
+				}
+
+				// big platform
+
+				currentX += directionX * 800 + randomOffset(200)
+				currentY += 200
+				currentZ += directionZ * 800 + randomOffset(200)
+				
+				let bigWidth = 1000
+				pathPlatforms.push(new Platform(currentX - bigWidth/2, currentY, currentZ - bigWidth/2, 
+																				bigWidth, 100, bigWidth))
+				platforms.push(pathPlatforms[pathPlatforms.length-1])
+
+				//respawnPoints.push(new RespawnPoint(currentX - bigWidth/2 + (bigWidth * Math.round(Math.random())), currentY + 100, currentZ - bigWidth/2 + (bigWidth * Math.round(Math.random()))))
+				respawnPoints.push(new RespawnPoint(currentX, currentY + 100, currentZ))
+				
+				// diverging path
+				let divergingPathPicker = Math.random()
+
+				let dDirectionX
+				let dDirectionZ
+
+				let dDirectionChooser = Math.random()
+			
+				if (dDirectionChooser < .25) {
+					dDirectionX = 1
+					dDirectionZ = 0
+				} else if (dDirectionChooser < .5) {
+					dDirectionX = 1
+					dDirectionZ = 0
+				} else if (dDirectionChooser < .75) {
+					dDirectionX = 0
+					dDirectionZ = 1
+				} else if (dDirectionChooser < 1) {
+					dDirectionX = 0
+					dDirectionZ = 1
+				}
+
+				let dCurrentX = currentX + dDirectionX * 600
+				let dCurrentY = currentY
+				let dCurrentZ = currentZ + dDirectionZ * 600
+
+				
+				if (divergingPathPicker < 1) {
+					// diverging bouncy path with coins
+					for (let i = 0; i < 3; i++) {
+						dCurrentX += dDirectionX * 900 + randomOffset(100)
+						dCurrentY += 100
+						dCurrentZ += dDirectionZ * 900 + randomOffset(100)
+						
+						let dWidth = 400
+						pathPlatforms.push(new BouncePad(dCurrentX - dWidth/2, dCurrentY, dCurrentZ - dWidth/2, 
+																						dWidth, 50, dWidth))
+						bouncePads.push(pathPlatforms[pathPlatforms.length-1])
+					}
+				}
+
+				
+				directionChooser = Math.random()
+	
+				
+				if (directionChooser < .25) {
+					directionX = 1
+					directionZ = 0
+				} else if (directionChooser < .5) {
+					directionX = 1
+					directionZ = 0
+				} else if (directionChooser < .75) {
+					directionX = 0
+					directionZ = -1
+				} else if (directionChooser < 1) {
+					directionX = 0
+					directionZ = -1
+				}
+				
+				currentX += directionX * 1000
+				currentY += 200
+				currentZ += directionZ * 1000
+
+				pathPlatforms.push(new Arena(currentX, currentY, currentZ, 500))
+				arenas.push(pathPlatforms[pathPlatforms.length-1])
+				
+				
+				
+			} else if (pathChooser < 1) {
+
+				
+			} else if (pathChooser < 1) {
+
+				
+			} else if (pathChooser < .99) {
+
+
+				
+			} else {
+
+				
+			}
+
+			
+			//let jointChooser = Math.random()
+			//if (jointChooser < .5) currentJoint = STAIRS
+			//else currentJoint = BOUNCY_STAIRS
+		/*
+			pathPlatforms.push(new Platform(currentX - (platformWidth/2), currentY, currentZ - (platformLength/2), platformWidth, platformHeight, platformLength))
+			
+			
+			currentX += 500
+			currentY += 100
+		
+			pathPlatforms.push(new BouncePad(currentX - (platformWidth/2), currentY, currentZ - (platformLength/2), platformWidth, platformHeight, platformLength))
+		
+			currentX += 1000
+			currentY += 100
+		
+			pathPlatforms.push(new Arena(currentX, currentY, currentZ, 750))
+			arenas.push(pathPlatforms[pathPlatforms.length-1])
+			
+			
+			currentX += 1000
+			currentY += 100*/
+		}
 	}
+	
+	canvas.requestPointerLock();
 }
 
 
-//var platform = new Platform(100, 200, 100, 500, 500, 200)
-
-//var bouncePads = []
-//bouncePads.push(new BouncePad(700, 300, 500, 400, 100, 500))
-
-var coin = new Coin(200, 200, 0, 1, 1, 0)
-
-//var arena = new Arena(1750, 500, 500, 750)
-
-
-
-// make path
-// each joint is a small path that ends with an arena
-// each joint goes up and in a random direction
-
-var pathPlatforms = []
-
-const START = 0
-const STAIRS = 1
-const BOUNCY_STAIRS = 2
-
-
-let currentJoint = START
-let currentX = 0
-let currentY = 0
-let currentZ = 200
-
-let platformWidth = 200
-let platformHeight = 75
-let platformLength = 300
-
-let numberOfLevels = 5
-for (let i = 0; i < numberOfLevels; i++) {
-	//let jointChooser = Math.random()
-	//if (jointChooser < .5) currentJoint = STAIRS
-	//else currentJoint = BOUNCY_STAIRS
-
-	pathPlatforms.push(new Platform(currentX - (platformWidth/2), currentY, currentZ - (platformLength/2), platformWidth, platformHeight, platformLength))
-
-	currentX += 500
-	currentY += 100
-
-	pathPlatforms.push(new BouncePad(currentX - (platformWidth/2), currentY, currentZ - (platformLength/2), platformWidth, platformHeight, platformLength))
-
-	currentX += 1000
-	currentY += 100
-
-	pathPlatforms.push(new Arena(currentX, currentY, currentZ, 500))
 
 	
-	currentX += 1000
-	currentY += 100
-}
 
 
-
-
-refresh()
+//refresh()

@@ -80,6 +80,10 @@ document.addEventListener("wheel", function (event) {
 })
 
 
+document.getElementById("detailSlider").onInput = function () {
+	var detailLevel = Number(document.getElementById("detailSlider").value) / 20
+}
+
 
 canvas.onclick = function() {
 	canvas.requestPointerLock();
@@ -91,6 +95,8 @@ document.addEventListener("pointerlockchange", function () {
 		if (!running) {
 			running = true
 			refresh()
+			
+			
 		}
 	} else {
 		pointerLocked = false
@@ -104,6 +110,10 @@ document.addEventListener("mousemove", function (event) {
 		sensitivity = Math.PI / 512;
 		angleX += sensitivity * event.movementY
 		angleY += sensitivity * event.movementX
+
+		if (angleX < -Math.PI / 2) angleX = -Math.PI / 2
+		if (angleX > Math.PI / 2) angleX = Math.PI / 2
+		
 	}
 	
 }, false)

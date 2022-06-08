@@ -18,5 +18,12 @@ coins replenish some health
 
 big platforms have respawn points -- make respawn point object
 
+make diverging paths that lead to coins
+
+make random trampolines
+
 respawn: 
-	make respawn point 
+	make respawn point array
+	make current respawn variable
+
+	flash a little when respawn
