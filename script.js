@@ -269,6 +269,8 @@ var bouncePads
 var arenas
 var respawnPoints
 
+//var testFighter = new Fighter(500, 0, -800)
+
 var constructed = false
 
 
@@ -468,7 +470,7 @@ document.getElementById("play").onclick = function () {
 				currentY += 200
 				currentZ += directionZ * 1000
 
-				pathPlatforms.push(new Arena(currentX, currentY, currentZ, 500))
+				pathPlatforms.push(new Arena(currentX, currentY, currentZ, 750))
 				arenas.push(pathPlatforms[pathPlatforms.length-1])
 				
 				

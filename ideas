@@ -27,3 +27,8 @@ respawn:
 	make current respawn variable
 
 	flash a little when respawn
+
+
+
+enemy variants:
+	variant that retreats after it hits player when charging

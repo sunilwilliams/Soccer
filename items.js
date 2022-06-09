@@ -181,38 +181,32 @@ class RespawnPoint {
 															
 	run() {
 
-		if (this.discoveredStartFrame < frameCounter) {
-			
-			for (let i = 0; i < this.outerPoints.length; i++) {
-				for (let j = 0; j < this.outerPoints[i].length; j++) {
-					for (let k = 0; k < this.outerPoints[i][j].length; k++) {
-						let current = this.outerPoints[i][j][k]
+		for (let i = 0; i < this.outerPoints.length; i++) {
+			for (let j = 0; j < this.outerPoints[i].length; j++) {
+				for (let k = 0; k < this.outerPoints[i][j].length; k++) {
+					let current = this.outerPoints[i][j][k]
 
-						let animationFrame = frameCounter - (k * 2)
-			
-						if (animationFrame > this.discoveredStartFrame) {
-							animationFrame -= this.discoveredEndFrame
+					let animationFrame = frameCounter - (k * 3)
 
-							let speed = 100
-						
-							let changeY = k * (-speed * Math.cos(Math.PI * animationFrame / 35) + speed) / 20
-							//let changeY = 100 * Math.cos(animationFrame / speed)
-							
-							
-							//if () console.log(changeY)
-						
-							changePoint(current.point, current.x, current.y + changeY, current.z)
+					let speed = 100
+				
+					let changeY = k * (-speed * Math.cos(Math.PI * animationFrame / 35) + speed) / 20
+					//let changeY = 100 * Math.cos(animationFrame / speed)
+					
+					
+					//if () console.log(changeY)
+				
+					changePoint(current.point, current.x, current.y + changeY, current.z)
 
-							let colorChange = changeY / speed
-							
-							changePointColor(current.point, 1 - (colorChange / this.minusR), 1 - (colorChange / this.minusG), 1 - (colorChange / this.minusB))
-						}
-					}
+					let colorChange = changeY / speed
+					
+					changePointColor(current.point, 1 - (colorChange / this.minusR), 1 - (colorChange / this.minusG), 1 - (colorChange / this.minusB))
+				
 				}
 			}
 		}
-		
 	}
+		
 	
 }
 

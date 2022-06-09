@@ -19,6 +19,8 @@ var lastVelocityX = 0,
 		lastVelocityZ = 0
 
 
+var playerHealth = 300
+var currentEnemyHealth = 0
 
 
 // waddle values
@@ -268,7 +270,7 @@ function refresh(now) {
 
 	let minimumFlatness = 3
 	
-	if (!crouching && (Math.abs(point(low[0], Y) - Math.abs(point(low[3], Y)))) < minimumFlatness) {
+	if (!crouching && (Math.abs(point(low[0], Y) - Math.abs(point(low[3], Y)))) < minimumFlatness && Math.sqrt(Math.pow(velocityX, 2) + Math.pow(velocityZ, 2)) < 2) {
 		layingFlat = true
 		if (!w && !a && !s && !d) {
 			velocityX = 0
@@ -399,6 +401,8 @@ function refresh(now) {
 		yOfZ[i] = calculateSlope(lastPoints[i][Z], lastPoints[i][Y], point(i, Y), point(i, Y))
 	}
 
+
+	//testFighter.run()
 	
 	
 	//platform.collision()
@@ -623,7 +627,9 @@ function refresh(now) {
 		"<br>y: " + Math.round(average.y) + 
 		"<br>z: " + Math.round(average.z) + 
 		"<br>Points: " + points.length / 3 + 
-		"<br>Polys: " + polys.length / 3
+		"<br>Polys: " + polys.length / 3 + 
+		"<br>Player Health: " + playerHealth + 
+		"<br>Enemy Health: " + currentEnemyHealth
 	)
 	
 

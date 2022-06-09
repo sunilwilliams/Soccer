@@ -271,7 +271,7 @@ class GrassSection {
 
 	loadIn () {
 		if (!this.loadedIn) {
-			let bladeNumber = Math.round(.0001 * this.size * this.size)
+			let bladeNumber = Math.round(.0002 * this.size * this.size * detailLevel)
 			for (let i = 0; i < bladeNumber; i++) {	
 				let xDistance = (Math.random() - .5) * this.size
 				let zDistance = (Math.random() - .5) * this.size

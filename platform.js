@@ -329,6 +329,8 @@ class BouncePad {
 		if (this.loadedIn) {
 			this.loadedIn = false
 
+			this.waveStartFrame = 0
+
 			for (let i = 0; i < this.polys.length; i++) {
 				deletePoly(this.polys[i])
 			} this.polys = []
@@ -552,6 +554,7 @@ class Arena {
 
 
 		this.enemy
+		this.enemySpawned = false
 
 
 		this.nextPlatform
@@ -754,8 +757,40 @@ class Arena {
 			this.blades[i].smush()
 		}
 
+		if (this.enemySpawned && this.enemy.stillRunning) this.enemy.run()
+
 		if (this.inArena) {
-			this.enemy.run()
+
+			let enemyDistFromCenter = Math.sqrt(Math.pow(this.x - this.enemy.x, 2) + Math.pow(this.z - this.enemy.z, 2))
+
+			if (enemyDistFromCenter > this.radius - this.enemy.size) {
+				this.hitX = this.enemy.x
+				this.hitY = this.enemy.y
+				this.hitZ = this.enemy.z
+
+				this.waveStartFrame = frameCounter
+				
+				let distX = this.enemy.x - this.x
+				let distZ = this.enemy.z - this.z
+
+				let distTotal = Math.abs(distX) + Math.abs(distZ)
+
+				if (this.enemy.currentMove == 0 || this.enemy.currentMove == 1) { // if recovering or recoiling
+					this.enemy.recoilVelocityX = -(distX / distTotal) * 20
+					this.enemy.recoilVelocityZ = -(distZ / distTotal) * 20
+
+					this.enemy.chargeVelocityX = 0
+					this.enemy.chargeVelocityZ = 0
+				}
+				
+				if (this.enemy.currentMove == 2) { // if charging
+					this.enemy.chargeVelocityX = -(distX / distTotal) * 20
+					this.enemy.chargeVelocityZ = -(distZ / distTotal) * 20
+
+					this.enemy.recoilVelocityX = 0
+					this.enemy.recoilVelocityZ = 0
+				}
+			}
 
 			if (!this.enemy.alive) {
 				this.disarmArena()
@@ -839,6 +874,8 @@ class Arena {
 						let waveAmount = 0
 						if (waveFrame >= 1) waveAmount = waveAmplitude * Math.sin(Math.PI * (waveFrame)) / (Math.pow(waveFrame, 1.5))
 
+						//waveAmount *= k / this.wallPrecision
+						
 						let distX = Math.pow(currentPoint.x - this.x, 2)
 						let distZ = Math.pow(currentPoint.z - this.z, 2)
 						
@@ -915,8 +952,10 @@ class Arena {
 			this.wallsUpEndFrame = frameCounter + this.animationTime
 	
 			// size, power, agility, health, x, z, r, g, b
-			this.enemy = new Enemy(125, 100, 100, 100, this.x, this.y, this.z)
-
+			//this.enemy = new Enemy(125, 100, 100, 100, this.x, this.y, this.z)
+			this.enemy = new Fighter(this.x, this.y, this.z, 100)
+			this.enemySpawned = true
+			
 			// make wall polys with wallprecision
 
 			
